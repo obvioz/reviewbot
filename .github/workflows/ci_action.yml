@@ -1,0 +1,21 @@
+name: CodeChecker
+
+on: push
+
+jobs:
+  code_ckecking:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: clone repo
+        uses: actions/checkout@v1
+
+      - name: install requirements
+        run: python3 -m pip install -r requirements.txt
+
+      - name: black checking
+        run: black --check .
+
+      - name: mypy checking
+        run: mypy .
+
