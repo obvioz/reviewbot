@@ -1,14 +1,10 @@
 import logging
-
 from aiogram import Bot, Dispatcher, executor, types
-
 from config import API
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API)
 dp = Dispatcher(bot)
-
-
 WELCOME_MESSAGE = """Здравствуйте, вас приветствует бот из Атлашево!
 Будем рады вашему отзыву о нашей продукции!
 Для этого нужно нажать кнопку *Оставить отзыв*"""
