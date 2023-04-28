@@ -17,9 +17,7 @@ WELCOME_MESSAGE = """Здравствуйте, вас приветствует �
 @dp.message_handler(commands=["start"])
 async def send_welcome(message: types.Message):
 
-    await message.answer(
-        WELCOME_MESSAGE, parse_mode="markdown"
-    )  # отвечает без комментария
+    await message.answer(WELCOME_MESSAGE, parse_mode="markdown")
 
 
 if __name__ == "__main__":
