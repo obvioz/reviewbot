@@ -39,6 +39,7 @@ async def send_welcome(message: types.Message):
 async def review(message: types.Message):
     keyboard_remove = types.ReplyKeyboardRemove()
     await message.answer("Пожалуйста введите отзыв:", reply_markup=keyboard_remove)
+
     DBCtrl.create_review_record(message.from_user.id)
 
 
@@ -60,6 +61,9 @@ async def review_photo(message: types.Message):
         )
         # TODO: выводится столько же раз сколько добавлено фото, нужно только 1 вывод!
         await message.answer("фото добавлено")
+        if message.caption:
+            message.text = message.caption
+            await review_message(message)
     else:
         await message.answer("НАХЕР МНЕ ТВОЯ ФОТКА!?")
 

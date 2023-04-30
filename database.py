@@ -14,7 +14,7 @@ from sqlalchemy.exc import MultipleResultsFound
 from sqlalchemy.orm import DeclarativeBase, scoped_session, sessionmaker  # type: ignore
 
 DB_URL = "sqlite:///reviewbot.db"
-engine = create_engine(DB_URL, echo=True)
+engine = create_engine(DB_URL)
 
 session_factory = sessionmaker(bind=engine)
 Session = scoped_session(session_factory)
