@@ -5,3 +5,5 @@ __pycache__
 *venv*
 bin/
 lib/
+reviewbot.db
+include/
