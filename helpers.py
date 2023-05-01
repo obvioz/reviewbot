@@ -1,5 +1,4 @@
 import json
-from typing import Optional
 
 import aiohttp
 
@@ -19,14 +18,11 @@ def get_photo_link(photo_path):
     return f"https://api.telegram.org/file/bot{API}/{photo_path}"
 
 
-async def get_review_photos(review_id: int) -> Optional[list[str]]:
+async def get_review_photos(review_id: int):
     photos = DB.get_photos_by_review_id(review_id)
     if photos:
         if isinstance(photos, Photos):
             return [photos.photo_data]
         else:
-            photo_list = []
-            for photo in photos:
-                photo_list.append(photo.photo_data)
-            return photo_list
+            return [photo.photo_data for photo in photos]
     return None

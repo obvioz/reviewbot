@@ -75,7 +75,7 @@ class DB:
                 .where(and_(Reviews.user_id == user_id, Reviews.published == False))
                 .one()
             )
-            record.published = True
+            record.published = True  # type: ignore
             session.commit()
 
     @classmethod
@@ -93,7 +93,7 @@ class DB:
             return session.query(Reviews).all()
 
     @classmethod
-    def get_last_review(cls) -> Reviews:
+    def get_last_review(cls):
         with Session() as session:
             return session.query(Reviews).order_by(Reviews.key_id.desc()).first()
 
