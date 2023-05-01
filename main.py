@@ -3,7 +3,7 @@ from collections.abc import Iterable
 
 from aiogram import Bot, Dispatcher, executor, filters, types
 
-from config import API
+from config import ADMINS, API
 from database import DB
 from helpers import get_review_photos
 
@@ -20,7 +20,6 @@ BUTTON1_TEXT = "🐄Оставить отзыв"
 BUTTON_ADMIN_KEY = "👨🏿‍🦳Получить отзыв👨🏿‍🦳"
 BUTTON_LAST_REVIEW = "Последний отзыв"
 BUTTON_LAST_WEEK_REVIEW = "Отзывы за неделю"
-ADMINS = [243568054, 427018143]
 
 
 def keyboard_generator(*keys: Iterable[str]):
@@ -89,7 +88,7 @@ async def get_last_week_reviews(message: types.Message):
         await message.answer(
             f"{delimiter} CREATED: {review.created_at} USER_ID: {review.user_id} {delimiter}"
         )
-        photos = await get_review_photos(review.key_id)
+        photos = await get_review_photos(int(review.key_id))
         await message.answer(f"{review.message}")
         if photos:
             for photo in photos:
@@ -112,8 +111,6 @@ async def review_photo(message: types.Message):
         DB.create_photo(
             photo_data=message.photo[-1].file_id, review_id=user_review.key_id
         )
-        # TODO: выводится столько же раз сколько добавлено фото, нужно только 1 вывод!
-        await message.answer("фото добавлено")
         if message.caption:
             message.text = message.caption
             await review_message(message)
