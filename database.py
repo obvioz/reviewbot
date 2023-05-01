@@ -1,12 +1,19 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz  # type: ignore
-from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
-                        and_, create_engine)
-from sqlalchemy.exc import MultipleResultsFound
-from sqlalchemy.orm import (DeclarativeBase, scoped_session,  # type: ignore
-                            sessionmaker)
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    and_,
+    create_engine,
+)
+from sqlalchemy.exc import MultipleResultsFound  # type: ignore
+from sqlalchemy.orm import DeclarativeBase, scoped_session, sessionmaker  # type: ignore
 
 DB_URL = "sqlite:///reviewbot.db"
 engine = create_engine(DB_URL)
@@ -25,7 +32,7 @@ class Reviews(Base):
     key_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, nullable=False)
     message = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.now(pytz.timezone('Europe/Moscow')))
+    created_at = Column(DateTime, default=datetime.now(pytz.timezone("Europe/Moscow")))
     published = Column(Boolean, default=False)
 
     def __repr__(self):
@@ -59,7 +66,7 @@ class DB:
             if record is not None:
                 record.message = message
                 session.commit()
-    
+
     @classmethod
     def publish_review(cls, user_id: int):
         with Session() as session:
@@ -84,11 +91,20 @@ class DB:
     def get_all_reviews(cls) -> list[Reviews]:
         with Session() as session:
             return session.query(Reviews).all()
-        
+
     @classmethod
-    def get_last_review(cls):
+    def get_last_review(cls) -> Reviews:
         with Session() as session:
             return session.query(Reviews).order_by(Reviews.key_id.desc()).first()
+
+    @classmethod
+    def get_last_week_reviews(cls) -> list[Reviews]:
+        with Session() as session:
+            return (
+                session.query(Reviews)
+                .filter(Reviews.created_at >= datetime.now() - timedelta(days=7))
+                .all()
+            )
 
     @classmethod
     def get_photos(cls):
@@ -105,9 +121,7 @@ class DB:
                     .one_or_none()
                 )
             except MultipleResultsFound:
-                return (
-                    session.query(Photos).where(Photos.review_id == review_id).all()
-                )
+                return session.query(Photos).where(Photos.review_id == review_id).all()
 
     @classmethod
     def create_photo(cls, photo_data, review_id):
