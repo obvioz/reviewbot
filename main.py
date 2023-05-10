@@ -30,6 +30,14 @@ def is_admin(user_id: int):
     return user_id in ADMINS
 
 
+def admin_only(func):
+    async def wrapper(message):
+        if is_admin(message.from_user.id):
+            return await func(message)
+
+    return wrapper
+
+
 @dp.message_handler(commands=["start"])
 async def send_welcome(message: types.Message):
     if message.from_user.id in ADMINS:
@@ -48,9 +56,8 @@ async def review(message: types.Message):
 
 
 @dp.message_handler(filters.Text(BUTTON_ADMIN_KEY))
+@admin_only
 async def admin_dialog(message: types.Message):
-    if not is_admin(message.from_user.id):
-        return
     kb = keyboard_generator(BUTTON_LAST_REVIEW, BUTTON_LAST_WEEK_REVIEW)
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
     await bot.send_sticker(
@@ -61,9 +68,8 @@ async def admin_dialog(message: types.Message):
 
 
 @dp.message_handler(filters.Text(BUTTON_LAST_REVIEW))
+@admin_only
 async def get_last_review(message: types.Message):
-    if not is_admin(message.from_user.id):
-        return
     keyboard_remove = types.ReplyKeyboardRemove()
     review = DB.get_last_review()
     await message.answer(
@@ -77,9 +83,8 @@ async def get_last_review(message: types.Message):
 
 
 @dp.message_handler(filters.Text(BUTTON_LAST_WEEK_REVIEW))
+@admin_only
 async def get_last_week_reviews(message: types.Message):
-    if not is_admin(message.from_user.id):
-        return
     keyboard_remove = types.ReplyKeyboardRemove()
     reviews = DB.get_last_week_reviews()
     await message.answer(f"Время почитать отзывы:", reply_markup=keyboard_remove)
