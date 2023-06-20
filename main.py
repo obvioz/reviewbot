@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from collections.abc import Iterable
 
 from aiogram import Bot, Dispatcher, executor, filters, types
@@ -20,6 +21,17 @@ BUTTON1_TEXT = "🐄Оставить отзыв"
 BUTTON_ADMIN_KEY = "👨🏿‍🦳Получить отзыв👨🏿‍🦳"
 BUTTON_LAST_REVIEW = "Последний отзыв"
 BUTTON_LAST_WEEK_REVIEW = "Отзывы за неделю"
+BUTTON_CREATE_MESSAGE = "Создание текста для отправки"
+BUTTON_SEND_MESSAGE = "Отправить сообщение всем user id"
+
+
+@dataclass
+class Annonce:
+    GLOBAL_MESSAGE = str()
+    FLAG = False
+
+
+a = Annonce()
 
 
 def keyboard_generator(*keys: Iterable[str]):
@@ -41,7 +53,9 @@ def admin_only(func):
 @dp.message_handler(commands=["start"])
 async def send_welcome(message: types.Message):
     if message.from_user.id in ADMINS:
-        kb = keyboard_generator(BUTTON_ADMIN_KEY, BUTTON1_TEXT)
+        kb = keyboard_generator(
+            BUTTON_ADMIN_KEY, BUTTON1_TEXT, BUTTON_SEND_MESSAGE, BUTTON_CREATE_MESSAGE
+        )
     else:
         kb = keyboard_generator(BUTTON1_TEXT)
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
@@ -65,6 +79,22 @@ async def admin_dialog(message: types.Message):
         sticker="CAACAgIAAxkBAAEIzoJkT7HCr9kC_C3VItfXvyEg6Pdt0AACOQMAArVx2gYjUGZnvEY4rS8E",
         reply_markup=keyboard,
     )
+
+
+@dp.message_handler(filters.Text(BUTTON_CREATE_MESSAGE))
+@admin_only
+async def create_global_message(message: types.Message):
+    a.FLAG = True
+
+
+@dp.message_handler(filters.Text(BUTTON_SEND_MESSAGE))
+@admin_only
+async def send_global_message(message: types.Message):
+    for i in set([i.user_id for i in DB.get_all_reviews()]):
+        await bot.send_message(
+            i,
+            text=a.GLOBAL_MESSAGE,
+        )
 
 
 @dp.message_handler(filters.Text(BUTTON_LAST_REVIEW))
@@ -106,6 +136,9 @@ async def review_message(message: types.Message):
         DB.update_review_message(message.from_user.id, message.text)
         await message.answer("Cпасибо за отзыв!")
         DB.publish_review(message.from_user.id)
+    elif a.FLAG:
+        a.GLOBAL_MESSAGE = message.text
+        a.FLAG = False
     else:
         await send_welcome(message)
 
